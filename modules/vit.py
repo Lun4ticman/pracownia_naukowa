@@ -5,8 +5,6 @@ from einops import repeat
 from modules.patch_embedding import PatchEmbedding
 from modules.layers import *
 
-# from
-
 
 class ViT(nn.Module):
     def __init__(self, ch=3, img_size=144, patch_size=4, emb_dim=32,
