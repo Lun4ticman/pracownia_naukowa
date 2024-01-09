@@ -33,7 +33,7 @@ class ViT(nn.Module):
         # Transformer Encoder
         self.encoder_layers = nn.ModuleList(
             [EncoderLayer(emb_dim, heads, emb_dim, dropout) for _ in range(n_layers)])
-            
+
         # self.layers = nn.ModuleList([])
         # for _ in range(n_layers):
         #     transformer_block = nn.Sequential(
@@ -55,7 +55,12 @@ class ViT(nn.Module):
         tgt_mask = tgt_mask & nopeak_mask
         return src_mask, tgt_mask
 
-    def forward(self, img):
+
+    def compute_loss(): #TODO: -> Zrobić tą funkcję żeby pasowało do RAVEN'a
+        pass
+
+
+    def forward(self, img): #TODO: -> Dostosować tą funkcję do RAVEN'a
         # Get patch embedding vectors
         x = self.patch_embedding(img)
         b, n, _ = x.shape
