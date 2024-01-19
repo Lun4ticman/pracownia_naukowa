@@ -1,7 +1,7 @@
 from torch import nn
 from einops.layers.torch import Rearrange
 from torch import Tensor
-
+import torch
 
 class PatchEmbedding(nn.Module):
     def __init__(self, in_channels = 3, patch_size = 8, emb_size = 128):
@@ -16,3 +16,4 @@ class PatchEmbedding(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
         x = self.projection(x)
         return x
+    
