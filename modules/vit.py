@@ -26,15 +26,15 @@ class ViT(nn.Module):
         # Learnable params
         num_patches = (img_size // patch_size) ** 2
         self.pos_embedding = nn.Parameter(
-            torch.randn(1, num_patches + 1, emb_dim))
-        self.cls_token = nn.Parameter(torch.rand(1, 1, emb_dim))
+            torch.randn(1, num_patches + 1, emb_dim), requires_grad=True)
+        self.cls_token = nn.Parameter(torch.rand(1, 1, emb_dim), requires_grad=True)
 
         # Transformer Encoder
         self.encoder_layers = nn.ModuleList(
             [EncoderLayer(emb_dim, heads, emb_dim, dropout) for _ in range(n_layers)])
 
-        # Classification head -> changing this to decoder layer
-        self.head = nn.Sequential(nn.LayerNorm(emb_dim), nn.Linear(emb_dim, out_dim))
+        # Classification head
+        self.head = nn.Sequential(nn.LayerNorm(emb_dim), nn.Linear(emb_dim, out_dim), nn.Softmax())
 
     def forward(self, img): 
         # Get patch embedding vectors
@@ -51,17 +51,3 @@ class ViT(nn.Module):
             x = self.encoder_layers[i](x)
 
         return self.head(x[:, 0, :])
-
-
-class ViT_RAVEN(BasicModel):
-    def __init__(self, args):
-        super(ViT_RAVEN, self).__init__(args)
-        
-
-    def compute_loss(self, output, target, meta_target, meta_structure):
-        pred = output[0]
-        loss = F.cross_entropy(pred, target)
-        return loss
-
-    def forward():
-        pass
