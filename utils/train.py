@@ -34,9 +34,9 @@ def train(model, train_loader, valid_loader, criterion, optimizer, num_epochs=10
 
                 train_loss += loss.item()
 
-                show_loss = train_loss/(idx+1)
+                running_loss = train_loss/(idx+1)
 
-                pbar.set_postfix(loss=show_loss)
+                pbar.set_postfix(loss=running_loss)
 
                 # print(f'\rEpoch {epoch}, Running loss:{show_loss:.4f}', end="")
 
@@ -81,18 +81,22 @@ def train(model, train_loader, valid_loader, criterion, optimizer, num_epochs=10
 
     writer.close()
 
-def test(model, dataloader):
+def test(model, dataloader, device='cuda'):
     # Set the model to evaluation mode
     model.eval()
 
     correct_predictions = 0
     total_samples = 0
 
+    model = model.to(device)
+
     with torch.no_grad():
         for inputs, labels in dataloader:
             # Convert inputs and labels to torch tensors if they are not already
             inputs = inputs.float()
             labels = labels.long()
+
+            inputs, labels = inputs.to(device), labels.to(device)
 
             # Forward pass
             outputs = model(inputs)

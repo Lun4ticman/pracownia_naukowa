@@ -1,12 +1,2 @@
-dataset/cifar-10-python.tar.gz
-dataset/cifar-10-batches-py/batches.meta
-dataset/cifar-10-batches-py/data_batch_1
-dataset/cifar-10-batches-py/data_batch_2
-dataset/cifar-10-batches-py/data_batch_3
-dataset/cifar-10-batches-py/data_batch_4
-dataset/cifar-10-batches-py/data_batch_5
-dataset/cifar-10-batches-py/readme.html
-dataset/cifar-10-batches-py/test_batch
-runs/Jan19_19-13-00_DESKTOP-O7RFKCV/events.out.tfevents.1705687980.DESKTOP-O7RFKCV.8020.1
-runs/Jan19_19-15-12_DESKTOP-O7RFKCV/events.out.tfevents.1705688112.DESKTOP-O7RFKCV.19336.0
-runs/Jan19_19-30-13_DESKTOP-O7RFKCV/events.out.tfevents.1705689013.DESKTOP-O7RFKCV.19336.1
+dataset
+runs
