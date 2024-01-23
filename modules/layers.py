@@ -24,7 +24,7 @@ class LayerNormalization(nn.Module):
 
         return out
 
-
+#TODO: To jest z maską ale chyba niepotrzebne w ViT
 class MultiHeadAttention(nn.Module):
     def __init__(self, d_model, num_heads):
         super(MultiHeadAttention, self).__init__()
@@ -69,8 +69,34 @@ class MultiHeadAttention(nn.Module):
 
         output = self.W_o(self.combine_heads(attn_output))
         return output
+    
+class MultiHeadSelfAttentionBlock(nn.Module):
+  def __init__(self,
+               embedding_dims = 768, 
+               num_heads = 12, 
+               attn_dropout = 0.0
+               ):
+    super().__init__()
+
+    self.embedding_dims = embedding_dims
+    self.num_head = num_heads
+    self.attn_dropout = attn_dropout
+
+    self.layernorm = nn.LayerNorm(normalized_shape = embedding_dims)
+
+    self.multiheadattention =  nn.MultiheadAttention(num_heads = num_heads,
+                                                     embed_dim = embedding_dims,
+                                                     dropout = attn_dropout,
+                                                     batch_first = True,
+                                                    )
+
+  def forward(self, x):
+    x = self.layernorm(x)
+    output,_ = self.multiheadattention(query=x, key=x, value=x,need_weights=False)
+    return output
 
 
+#TODO: not for ViT
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model, max_seq_length):
         super(PositionalEncoding, self).__init__()
@@ -91,14 +117,15 @@ class PositionalEncoding(nn.Module):
 class EncoderLayer(nn.Module):
     def __init__(self, d_model, num_heads, d_ff, dropout):
         super(EncoderLayer, self).__init__()
-        self.attention = MultiHeadAttention(d_model, num_heads)
+        # self.attention = MultiHeadAttention(d_model, num_heads)
+        self.attention = MultiHeadSelfAttentionBlock(d_model, num_heads)
         self.feed_forward = FeedForward(d_model, d_ff)
         self.norm1 = nn.LayerNorm(d_model)
         self.norm2 = nn.LayerNorm(d_model)
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, x, mask):
-        attn_output = self.attention(x, x, x, mask)
+    def forward(self, x):
+        attn_output = self.attention(x)
         x = self.norm1(x + self.dropout(attn_output))
         ff_output = self.feed_forward(x)
         x = self.norm2(x + self.dropout(ff_output))
