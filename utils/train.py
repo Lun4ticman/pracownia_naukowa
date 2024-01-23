@@ -4,6 +4,8 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
 
 def train(model, train_loader, valid_loader, criterion, optimizer, num_epochs=10, patience=3, checkpoint_path='checkpoint.pth'):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -88,13 +90,17 @@ def test(model, dataloader, device='cuda'):
     correct_predictions = 0
     total_samples = 0
 
+    preds = []
+    trues = []
+
     model = model.to(device)
 
     with torch.no_grad():
         for inputs, labels in dataloader:
             # Convert inputs and labels to torch tensors if they are not already
-            inputs = inputs.float()
-            labels = labels.long()
+            # inputs = inputs.float()
+            # labels = labels.long()
+            trues.extend(labels)
 
             inputs, labels = inputs.to(device), labels.to(device)
 
@@ -103,8 +109,20 @@ def test(model, dataloader, device='cuda'):
 
             # Calculate accuracy
             _, predicted_labels = torch.max(outputs, 1)
+            preds.extend(predicted_labels)
+
+
             correct_predictions += (predicted_labels == labels).sum().item()
             total_samples += labels.size(0)
 
+    preds = [pred.detach().cpu().numpy() for pred in preds]
+    trues = [true.detach().cpu().numpy() for true in trues]
+
     accuracy = correct_predictions / total_samples
+    cm = confusion_matrix(trues, preds)
     print(f'Test Accuracy: {accuracy * 100:.2f}%')
+
+    ConfusionMatrixDisplay(cm).plot()
+    plt.show()
+
+    return accuracy, cm

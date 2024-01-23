@@ -8,22 +8,21 @@ from modules.raven import *
 
 
 class ViT(nn.Module):
-    def __init__(self, ch=3, img_size=144, patch_size=4, emb_dim=32, d_ff=32,
+    def __init__(self, channels=3, img_size=144, patch_size=4, emb_dim=32, d_ff=32,
                 n_layers=6, out_dim=37, dropout=0.1, heads=2):
         super(ViT, self).__init__()
 
         # Attributes
-        self.channels = ch
+        self.channels = channels
         self.height = img_size
         self.width = img_size
         self.patch_size = patch_size
         self.n_layers = n_layers
 
         # Patching
-        self.patch_embedding = PatchEmbedding(in_channels=ch,
+        self.patch_embedding = PatchEmbedding(in_channels=channels,
                                               patch_size=patch_size,
                                               emb_size=emb_dim)
-        # self.patch_embedding.requires_grad_=True
         # Learnable params
         num_patches = (img_size // patch_size) ** 2
         self.pos_embedding = nn.Parameter(
@@ -33,11 +32,9 @@ class ViT(nn.Module):
         # Transformer Encoder
         self.encoder_layers = nn.ModuleList(
             [EncoderLayer(emb_dim, heads, d_ff, dropout) for _ in range(n_layers)])
-        # self.encoder_layers.requires_grad_=True
 
         # Classification head
         self.head = nn.Sequential(nn.LayerNorm(emb_dim), nn.Linear(emb_dim, out_dim), nn.Softmax())
-        # self.head.requires_grad_= True
 
     def forward(self, img): 
         # Get patch embedding vectors
