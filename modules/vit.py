@@ -34,9 +34,14 @@ class ViT(nn.Module):
             [EncoderLayer(emb_dim, heads, d_ff, dropout) for _ in range(n_layers)])
 
         # Classification head
-        self.head = nn.Sequential(nn.LayerNorm(emb_dim), nn.Linear(emb_dim, out_dim), nn.Softmax())
+        # self.head = nn.Sequential(nn.LayerNorm(emb_dim), nn.Linear(emb_dim, out_dim), nn.Softmax())
 
-    def forward(self, img): 
+        # Decoding layer
+        self.decoder_layers = nn.ModuleList(
+            [ViTDecoderLayer(emb_dim, heads, d_ff, dropout) for _ in range(n_layers)])
+        
+
+    def forward(self, img, mask=None): 
         # Get patch embedding vectors
         x = self.patch_embedding(img)
         b, n, _ = x.shape
@@ -49,5 +54,10 @@ class ViT(nn.Module):
         # Transformer layers
         for i in range(self.n_layers):
             x = self.encoder_layers[i](x)
+
+        # Transformer Decoder layers with masking
+        for i in range(self.n_layers):
+            x = self.decoder_layers[i](x, memory=x, mask=mask)
+
 
         return self.head(x[:, 0, :])
