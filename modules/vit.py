@@ -1,6 +1,7 @@
 import torch.nn as nn
 import torch
 from einops import repeat
+from einops.layers.torch import Rearrange
 
 from modules.patch_embedding import PatchEmbedding
 from modules.layers import *
@@ -9,7 +10,7 @@ from modules.raven import *
 
 class ViT(nn.Module):
     def __init__(self, channels=3, img_size=144, patch_size=4, emb_dim=32, d_ff=32,
-                n_layers=6, out_dim=37, dropout=0.1, heads=2):
+                n_layers=12, out_dim=10, dropout=0.1, heads=12):
         super(ViT, self).__init__()
 
         # Attributes
@@ -39,17 +40,21 @@ class ViT(nn.Module):
         # Decoding layer
         self.decoder_layers = nn.ModuleList(
             [ViTDecoderLayer(emb_dim, heads, d_ff, dropout) for _ in range(n_layers)])
-        
+
+        self.fc = nn.Linear(emb_dim, out_dim**2)
+
+        self.rearrange = Rearrange('b (n p) (p1 p2) -> b 1 (p p1) (n p2)', p1=patch_size, p2=patch_size, n=num_patches//2, p=num_patches//2)
+
 
     def forward(self, img, mask=None): 
         # Get patch embedding vectors
         x = self.patch_embedding(img)
         b, n, _ = x.shape
 
-        # Add cls token to inputs
-        cls_tokens = repeat(self.cls_token, '1 1 d -> b 1 d', b = b)
-        x = torch.cat([cls_tokens, x], dim=1)
-        x += self.pos_embedding[:, :(n + 1)]
+        # # Add cls token to inputs
+        # cls_tokens = repeat(self.cls_token, '1 1 d -> b 1 d', b = b)
+        # x = torch.cat([cls_tokens, x], dim=1)
+        # x += self.pos_embedding[:, :(n + 1)]
 
         # Transformer layers
         for i in range(self.n_layers):
@@ -59,5 +64,8 @@ class ViT(nn.Module):
         for i in range(self.n_layers):
             x = self.decoder_layers[i](x, memory=x, mask=mask)
 
+        x = self.fc(x)
 
-        return self.head(x[:, 0, :])
+        x = self.rearrange(x)
+
+        return x
